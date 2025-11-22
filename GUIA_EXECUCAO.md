@@ -1,92 +1,91 @@
-# 🚀 Guia Rápido de Execução
+# Guia Rapido de Execucao
 
-## ⚡ Início Rápido (3 Passos)
+## Inicio Rapido (3 Passos)
 
-### 1️⃣ Instalar Dependências
+### 1. Instalar Dependencias
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Baixar Modelo YOLO
+### 2. Baixar Modelo YOLO
 ```bash
 python download_yolo.py
 ```
 
-### 3️⃣ Executar Aplicação
+### 3. Executar Aplicacao
 ```bash
 python run.py
 ```
 
-**Pronto!** A aplicação abrirá automaticamente no navegador em `http://localhost:8501`
+Pronto! A aplicacao abrira automaticamente no navegador em http://localhost:8501
 
 ---
 
-## 📝 Método Detalhado
+## Metodo Detalhado
 
-### Opção A: Execução Automática (Recomendado)
+### Opcao A: Execucao Automatica (Recomendado)
 
-O script `run.py` faz tudo automaticamente:
+O script run.py faz tudo automaticamente:
 
 ```bash
 python run.py
 ```
 
-**O que ele faz:**
-- ✅ Verifica versão do Python
-- ✅ Verifica arquivos necessários
-- ✅ Instala dependências
-- ✅ Baixa arquivos YOLO se necessário
-- ✅ Inicia a aplicação
+O que ele faz:
+- Verifica versao do Python
+- Verifica arquivos necessarios
+- Instala dependencias
+- Baixa arquivos YOLO se necessario
+- Inicia a aplicacao
 
-### Opção B: Execução Manual
+### Opcao B: Execucao Manual
 
 Se preferir fazer passo a passo:
 
 ```bash
-# 1. Instalar dependências
+# 1. Instalar dependencias
 pip install -r requirements.txt
 
 # 2. Baixar modelo YOLO
 python download_yolo.py
 
-# 3. Executar aplicação
+# 3. Executar aplicacao
 streamlit run app.py --server.address localhost --server.port 8501
 ```
 
 ---
 
-## 🌐 Acessar a Aplicação
+## Acessar a Aplicacao
 
-Após executar, acesse no navegador:
-- **URL Local:** http://localhost:8501
-- **URL Alternativa:** http://127.0.0.1:8501
+Apos executar, acesse no navegador:
+- URL Local: http://localhost:8501
+- URL Alternativa: http://127.0.0.1:8501
 
 ---
 
-## 📱 Como Usar a Interface
+## Como Usar a Interface
 
-### Modo Tempo Real (WebRTC)
+### Modo Camera (Tirar Foto)
 
-1. Certifique-se que **"WebRTC (Tempo Real)"** está selecionado na barra lateral
-2. Clique em **"START"** para ativar a câmera
-3. **Permita acesso à câmera** quando solicitado
-4. Aponte a câmera para objetos
-5. A detecção é **automática e contínua**
-6. Ajuste o **"Limiar de Confiança"** se necessário
-7. Clique em **"STOP"** para parar
+1. Selecione "Tirar Foto" na barra lateral
+2. Permita acesso a camera quando solicitado pelo navegador
+3. Enquadre o objeto que deseja detectar
+4. Clique no botao de captura
+5. Aguarde a deteccao (alguns segundos)
+6. Veja os resultados com objetos marcados
 
 ### Modo Upload de Imagem
 
-1. Selecione **"Upload de Imagem"** na barra lateral
-2. Clique em **"Escolha uma imagem"**
-3. Selecione um arquivo (JPG, PNG, BMP)
-4. Veja o resultado com objetos marcados
+1. Selecione "Upload de Imagem" na barra lateral
+2. Clique para escolher um arquivo
+3. Selecione uma imagem (JPG, PNG, BMP)
+4. Veja o resultado com objetos detectados
 
 ---
 
-## ⚠️ Problemas Comuns
+## Problemas Comuns
 
-### ❌ "Streamlit já está em uso"
+### "Streamlit ja esta em uso"
 ```bash
 # Windows
 taskkill /f /im streamlit.exe
@@ -95,33 +94,35 @@ taskkill /f /im streamlit.exe
 pkill -f streamlit
 ```
 
-### ❌ "Modelo não encontrado"
+### "Modelo nao encontrado"
 ```bash
 python download_yolo.py
 ```
 
-### ❌ "Erro ao instalar dependências"
+### "Erro ao instalar dependencias"
 ```bash
 pip install --upgrade pip
 pip install --user -r requirements.txt
 ```
 
-### ❌ "Câmera não funciona"
-- Verifique permissões do navegador
+### "Camera nao funciona"
+- Verifique permissoes do navegador
 - Teste em outro navegador (Chrome recomendado)
-- Feche outros programas que usam a câmera
+- Feche outros programas que usam a camera
+- Em mobile, certifique-se de usar HTTPS
 
 ---
 
-## 💡 Dicas
+## Dicas
 
-- **Primeira execução:** Pode demorar alguns minutos para baixar o modelo
-- **Melhor navegador:** Chrome ou Edge (melhor suporte WebRTC)
-- **Performance:** Aumente o limiar de confiança se estiver lento
-- **Parar aplicação:** Pressione `Ctrl+C` no terminal
+- Primeira execucao: Pode demorar alguns minutos para baixar o modelo
+- Melhor navegador: Chrome ou Edge
+- Performance: Aumente o limiar de confianca se estiver lento
+- Parar aplicacao: Pressione Ctrl+C no terminal
+- Mobile: Funciona melhor em modo retrato
 
 ---
 
-## 📖 Documentação Completa
+## Documentacao Completa
 
 Para mais detalhes, consulte o [README.md](README.md)

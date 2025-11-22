@@ -5,12 +5,123 @@ from PIL import Image
 import os
 import urllib.request
 
-# Configuracao da pagina
+# Configuracao da pagina - mobile friendly
 st.set_page_config(
-    page_title="Deteccao de Objetos - Styolo",
-    page_icon="📷",
-    layout="wide"
+    page_title="Styolo",
+    page_icon="S",
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
+
+# CSS customizado para interface mobile-like
+st.markdown("""
+<style>
+    /* Esconder menu e rodape do Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Container principal */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        max-width: 500px;
+    }
+
+    /* Estilo do titulo */
+    .app-title {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1f1f1f;
+        margin-bottom: 0.5rem;
+    }
+
+    .app-subtitle {
+        text-align: center;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Container da camera */
+    .camera-container {
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilo dos resultados */
+    .result-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1f1f1f;
+        margin-bottom: 0.5rem;
+    }
+
+    .detection-count {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+
+    .detection-label {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    /* Tabs customizadas */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0;
+        background: #f0f0f0;
+        border-radius: 10px;
+        padding: 4px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        flex: 1;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: white;
+    }
+
+    /* Camera input */
+    .stCameraInput > div {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Slider */
+    .stSlider {
+        padding-top: 0.5rem;
+    }
+
+    /* Objeto detectado */
+    .object-badge {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        margin: 0.2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Classes COCO para YOLO
 COCO_CLASSES = [
@@ -26,6 +137,32 @@ COCO_CLASSES = [
     'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
 ]
 
+# Traducao das classes para portugues
+CLASSES_PT = {
+    'person': 'Pessoa', 'bicycle': 'Bicicleta', 'car': 'Carro', 'motorcycle': 'Moto',
+    'airplane': 'Aviao', 'bus': 'Onibus', 'train': 'Trem', 'truck': 'Caminhao',
+    'boat': 'Barco', 'traffic light': 'Semaforo', 'fire hydrant': 'Hidrante',
+    'stop sign': 'Placa Pare', 'parking meter': 'Parquimetro', 'bench': 'Banco',
+    'bird': 'Passaro', 'cat': 'Gato', 'dog': 'Cachorro', 'horse': 'Cavalo',
+    'sheep': 'Ovelha', 'cow': 'Vaca', 'elephant': 'Elefante', 'bear': 'Urso',
+    'zebra': 'Zebra', 'giraffe': 'Girafa', 'backpack': 'Mochila', 'umbrella': 'Guarda-chuva',
+    'handbag': 'Bolsa', 'tie': 'Gravata', 'suitcase': 'Mala', 'frisbee': 'Frisbee',
+    'skis': 'Esquis', 'snowboard': 'Snowboard', 'sports ball': 'Bola',
+    'kite': 'Pipa', 'baseball bat': 'Taco', 'baseball glove': 'Luva',
+    'skateboard': 'Skate', 'surfboard': 'Prancha', 'tennis racket': 'Raquete',
+    'bottle': 'Garrafa', 'wine glass': 'Taca', 'cup': 'Copo', 'fork': 'Garfo',
+    'knife': 'Faca', 'spoon': 'Colher', 'bowl': 'Tigela', 'banana': 'Banana',
+    'apple': 'Maca', 'sandwich': 'Sanduiche', 'orange': 'Laranja', 'broccoli': 'Brocolis',
+    'carrot': 'Cenoura', 'hot dog': 'Cachorro-quente', 'pizza': 'Pizza', 'donut': 'Rosquinha',
+    'cake': 'Bolo', 'chair': 'Cadeira', 'couch': 'Sofa', 'potted plant': 'Planta',
+    'bed': 'Cama', 'dining table': 'Mesa', 'toilet': 'Vaso', 'tv': 'TV',
+    'laptop': 'Notebook', 'mouse': 'Mouse', 'remote': 'Controle', 'keyboard': 'Teclado',
+    'cell phone': 'Celular', 'microwave': 'Microondas', 'oven': 'Forno', 'toaster': 'Torradeira',
+    'sink': 'Pia', 'refrigerator': 'Geladeira', 'book': 'Livro', 'clock': 'Relogio',
+    'vase': 'Vaso', 'scissors': 'Tesoura', 'teddy bear': 'Ursinho', 'hair drier': 'Secador',
+    'toothbrush': 'Escova de dente'
+}
+
 def download_yolo_files():
     """Baixa os arquivos do modelo YOLO se nao existirem"""
     weights_url = "https://github.com/AlexeyAB/darknet/releases/download/yolov4/yolov4.weights"
@@ -35,21 +172,18 @@ def download_yolo_files():
     config_path = "yolov4.cfg"
 
     if not os.path.exists(weights_path):
-        st.info("Baixando arquivo de pesos do YOLOv4... Isso pode demorar alguns minutos.")
+        st.info("Baixando modelo... Isso pode demorar alguns minutos.")
         try:
             urllib.request.urlretrieve(weights_url, weights_path)
-            st.success("Arquivo de pesos baixado com sucesso!")
         except Exception as e:
-            st.error(f"Erro ao baixar arquivo de pesos: {e}")
+            st.error(f"Erro ao baixar modelo: {e}")
             return False
 
     if not os.path.exists(config_path):
-        st.info("Baixando arquivo de configuracao do YOLOv4...")
         try:
             urllib.request.urlretrieve(config_url, config_path)
-            st.success("Arquivo de configuracao baixado com sucesso!")
         except Exception as e:
-            st.error(f"Erro ao baixar arquivo de configuracao: {e}")
+            st.error(f"Erro ao baixar configuracao: {e}")
             return False
 
     return True
@@ -68,23 +202,20 @@ def load_yolo_model():
         net = cv2.dnn.readNet(weights_path, config_path)
         return net
     except Exception as e:
-        st.error(f"Erro ao carregar modelo YOLO: {e}")
+        st.error(f"Erro ao carregar modelo: {e}")
         return None
 
 def detect_objects(image, net, confidence_threshold=0.5):
     """Detecta objetos na imagem usando YOLO"""
     height, width = image.shape[:2]
 
-    # Criar blob da imagem
     blob = cv2.dnn.blobFromImage(image, 1/255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
 
-    # Obter deteccoes
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
     outputs = net.forward(output_layers)
 
-    # Processar deteccoes
     boxes = []
     confidences = []
     class_ids = []
@@ -108,152 +239,139 @@ def detect_objects(image, net, confidence_threshold=0.5):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
-    # Aplicar Non-Maximum Suppression
     indices = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, 0.4)
 
-    # Lista de objetos detectados
     detected_objects = []
 
-    # Desenhar bounding boxes
     if len(indices) > 0:
         for i in indices.flatten():
             x, y, w, h = boxes[i]
-            label = COCO_CLASSES[class_ids[i]]
+            label_en = COCO_CLASSES[class_ids[i]]
+            label_pt = CLASSES_PT.get(label_en, label_en)
             conf = confidences[i]
-            detected_objects.append({"label": label, "confidence": conf})
+            detected_objects.append({"label": label_pt, "label_en": label_en, "confidence": conf})
 
-            # Desenhar retangulo
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # Desenhar retangulo com cor verde
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 200, 0), 2)
 
-            # Desenhar label
-            text = f"{label}: {conf:.2f}"
-            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # Fundo para o texto
+            text = f"{label_pt}: {conf:.0%}"
+            (text_w, text_h), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+            cv2.rectangle(image, (x, y - text_h - 10), (x + text_w + 4, y), (0, 200, 0), -1)
+            cv2.putText(image, text, (x + 2, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
     return image, detected_objects
 
 def main():
-    st.title("📷 Deteccao de Objetos - Styolo")
-    st.markdown("Tire uma foto ou faca upload de uma imagem para detectar objetos!")
-    st.markdown("---")
+    # Titulo do app
+    st.markdown('<p class="app-title">Styolo</p>', unsafe_allow_html=True)
+    st.markdown('<p class="app-subtitle">Deteccao de objetos com inteligencia artificial</p>', unsafe_allow_html=True)
 
-    # Sidebar com configuracoes
-    st.sidebar.title("⚙️ Configuracoes")
-
-    # Verificar se o modelo esta disponivel
-    with st.spinner("Carregando modelo YOLO..."):
-        net = load_yolo_model()
+    # Carregar modelo
+    net = load_yolo_model()
 
     if net is None:
-        st.error("Nao foi possivel carregar o modelo YOLO. Verifique se os arquivos estao disponiveis.")
+        st.error("Nao foi possivel carregar o modelo. Verifique sua conexao.")
         st.stop()
 
-    st.sidebar.success("✅ Modelo YOLO carregado!")
+    # Configuracao de confianca (expansivel)
+    with st.expander("Configuracoes"):
+        confidence_threshold = st.slider(
+            "Sensibilidade da deteccao",
+            min_value=0.1,
+            max_value=1.0,
+            value=0.5,
+            step=0.1,
+            help="Valores menores detectam mais objetos"
+        )
+        st.caption("Valores baixos: mais deteccoes | Valores altos: mais precisao")
 
-    # Configuracoes do modelo
-    confidence_threshold = st.sidebar.slider(
-        "Limiar de Confianca",
-        min_value=0.1,
-        max_value=1.0,
-        value=0.5,
-        step=0.1,
-        help="Ajuste a sensibilidade da deteccao"
-    )
+    # Tabs para Camera e Upload
+    tab_camera, tab_upload = st.tabs(["Camera", "Galeria"])
 
-    # Modo de operacao
-    mode = st.sidebar.radio(
-        "Fonte da Imagem",
-        ["📷 Tirar Foto", "📁 Upload de Imagem"],
-        help="Escolha como voce quer fornecer a imagem"
-    )
-
-    # Informacoes sobre o projeto
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("### 📋 Sobre o Projeto")
-    st.sidebar.markdown("""
-    Esta aplicacao utiliza:
-    - **Streamlit** para interface web
-    - **YOLOv4** para deteccao de objetos
-    - **OpenCV** para processamento de imagem
-
-    Detecta **80 classes** de objetos incluindo pessoas, animais, veiculos, objetos domesticos e mais!
-    """)
-
-    # Conteudo principal
     img = None
 
-    if mode == "📷 Tirar Foto":
-        st.markdown("### 📷 Tire uma Foto")
-        st.markdown("Clique no botao abaixo para ativar a camera e tirar uma foto.")
-
-        # Usar camera_input do Streamlit
-        camera_photo = st.camera_input("Tire uma foto para detectar objetos")
+    with tab_camera:
+        camera_photo = st.camera_input(
+            "Aponte para um objeto e tire a foto",
+            label_visibility="collapsed"
+        )
 
         if camera_photo is not None:
-            # Converter para OpenCV
             file_bytes = camera_photo.read()
             nparr = np.frombuffer(file_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    else:  # Upload de Imagem
-        st.markdown("### 📁 Upload de Imagem")
-
+    with tab_upload:
         uploaded_file = st.file_uploader(
-            "Escolha uma imagem",
+            "Selecione uma imagem",
             type=['jpg', 'jpeg', 'png', 'bmp'],
-            help="Faca upload de uma imagem para detectar objetos"
+            label_visibility="collapsed"
         )
 
         if uploaded_file is not None:
-            # Converter para OpenCV
             file_bytes = uploaded_file.read()
             nparr = np.frombuffer(file_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Processar imagem se disponivel
+    # Processar imagem
     if img is not None:
-        st.markdown("---")
-
-        with st.spinner("Detectando objetos..."):
-            # Detectar objetos
+        with st.spinner("Analisando imagem..."):
             img_with_detections, detected_objects = detect_objects(img.copy(), net, confidence_threshold)
+            img_rgb = cv2.cvtColor(img_with_detections, cv2.COLOR_BGR2RGB)
 
-            # Converter para RGB para exibicao
-            img_rgb_original = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img_rgb_detected = cv2.cvtColor(img_with_detections, cv2.COLOR_BGR2RGB)
+        # Exibir resultado
+        st.image(img_rgb, use_container_width=True)
 
-        # Exibir resultados
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("**Imagem Original**")
-            st.image(img_rgb_original, use_container_width=True)
-
-        with col2:
-            st.markdown("**Objetos Detectados**")
-            st.image(img_rgb_detected, use_container_width=True)
-
-        # Mostrar lista de objetos detectados
-        st.markdown("---")
-
+        # Mostrar contagem
         if detected_objects:
-            st.success(f"✅ {len(detected_objects)} objeto(s) detectado(s)!")
+            # Contador principal
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.markdown(f'<p class="detection-count">{len(detected_objects)}</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="detection-label">objeto{"s" if len(detected_objects) > 1 else ""} detectado{"s" if len(detected_objects) > 1 else ""}</p>', unsafe_allow_html=True)
 
-            # Criar tabela de resultados
-            st.markdown("### 📊 Objetos Encontrados")
+            # Lista de objetos
+            st.markdown("---")
+            st.markdown("**Objetos encontrados:**")
 
-            cols = st.columns(min(len(detected_objects), 4))
-            for i, obj in enumerate(detected_objects):
-                with cols[i % 4]:
-                    st.metric(
-                        label=obj["label"].capitalize(),
-                        value=f"{obj['confidence']*100:.1f}%"
-                    )
+            # Agrupar objetos iguais
+            from collections import Counter
+            labels = [obj["label"] for obj in detected_objects]
+            label_counts = Counter(labels)
+
+            # Mostrar como badges
+            badges_html = ""
+            for label, count in label_counts.items():
+                if count > 1:
+                    badges_html += f'<span class="object-badge">{label} ({count}x)</span>'
+                else:
+                    badges_html += f'<span class="object-badge">{label}</span>'
+
+            st.markdown(badges_html, unsafe_allow_html=True)
+
+            # Detalhes expansiveis
+            with st.expander("Ver detalhes"):
+                for i, obj in enumerate(detected_objects, 1):
+                    st.markdown(f"{i}. **{obj['label']}** - {obj['confidence']:.0%} de confianca")
+
         else:
-            st.warning("Nenhum objeto detectado. Tente ajustar o limiar de confianca ou tire outra foto.")
+            st.warning("Nenhum objeto detectado. Tente aproximar a camera ou ajustar a sensibilidade.")
 
-        # Botao para nova deteccao
+    else:
+        # Estado inicial
         st.markdown("---")
-        st.info("💡 Para detectar novos objetos, tire outra foto ou faca upload de outra imagem.")
+        st.markdown(
+            """
+            **Como usar:**
+
+            1. Tire uma foto usando a camera acima
+            2. Ou selecione uma imagem da galeria
+            3. Aguarde a analise automatica
+
+            O sistema detecta mais de 80 tipos de objetos como pessoas, animais, veiculos, moveis e alimentos.
+            """
+        )
 
 if __name__ == "__main__":
     main()
